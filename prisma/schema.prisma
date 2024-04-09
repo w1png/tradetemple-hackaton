@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  MERCHANT
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  role Role @default(USER)
+
+  products     Product[]
+  warehouses   Warehouse[]
+  cartProducts CartProduct[]
+  reviews      Review[]      @relation("owner")
+
+  merchantReviews Review[] @relation("merchant")
+
+  createdAt DateTime @default(now())
+}
+
+enum Category {
+  ELECTRONICS
+  HOME
+  HOBBY
+  CLOTHING
+  BOOKS
+  PETS
+}
+
+model Product {
+  id       String   @id @default(cuid())
+  name     String
+  price    Int
+  category Category
+  images   String[]
+
+  sizeX Int
+  sizeY Int
+  sizeZ Int
+
+  weight      Int
+  description String
+
+  enabled Boolean @default(true)
+
+  ownerId           String
+  owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  warehouseProducts WarehouseProduct[]
+  cartProducts      CartProduct[]
+  reviews           Review[]
+}
+
+model Review {
+  id String @id @default(cuid())
+
+  body   String
+  rating Int
+
+  ownerId String
+  owner   User   @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  merchantId String
+  merchant   User   @relation("merchant", fields: [merchantId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model CartProduct {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  amount Int
+
+  @@id([userId, productId])
+}
+
+model Warehouse {
+  id     String @id @default(cuid())
+  adress String
+
+  ownerId                        String
+  owner                          User                             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  warehouseToPickupPointDistance WarehouseToPickupPointDistance[]
+  warehouseProduct               WarehouseProduct[]
+}
+
+model WarehouseProduct {
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  amount      Int
+
+  @@id([warehouseId, productId])
+}
+
+model PickupPoint {
+  id                             String                           @id @default(cuid())
+  adress                         String
+  schedule                       String
+  warehouseToPickupPointDistance WarehouseToPickupPointDistance[]
+}
+
+model WarehouseToPickupPointDistance {
+  distanceKm      Int
+  distanceMinutes Int
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  pickupPointId String
+  pickupPoint   PickupPoint @relation(fields: [pickupPointId], references: [id], onDelete: Cascade)
+
+  @@id([warehouseId, pickupPointId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum OrderStatus {
+  REGISTERED
+  PROCESSING
+  CANCELLED
+  SENT
+  DELIVERED
+  REJECTED
+  RECEIVED
+}
