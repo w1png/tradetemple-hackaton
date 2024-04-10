@@ -93,8 +93,6 @@ model Product {
 }
 
 model Review {
-  id String @id @default(cuid())
-
   body   String
   rating Int
 
@@ -106,6 +104,8 @@ model Review {
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([ownerId, productId])
 }
 
 model CartProduct {

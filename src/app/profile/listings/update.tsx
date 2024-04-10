@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Category } from "@prisma/client";
@@ -16,17 +17,22 @@ import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { ImagesToBase64, categories } from "~/shared";
+import { Base64ToFile, ImagesToBase64, categories } from "~/shared";
 import { Textarea } from "~/components/ui/textarea";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "~/components/loading";
 import { useRouter } from "next/navigation";
+import { Product } from "@prisma/client";
+import { RxPencil2 } from "react-icons/rx";
 import ImageUpload from "./upload_images";
+import { Switch } from "~/components/ui/switch";
 
-export default function CreateListing() {
+export default function UpdateListing({ listing }: {
+  listing: Product
+}) {
   const [open, setOpen] = useState<boolean>(false);
 
   const toast = useToast();
@@ -35,17 +41,29 @@ export default function CreateListing() {
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  const createMutation = api.product.create.useMutation({
+  useEffect(() => {
+    const images = Promise.all(
+      listing.images.map((image) => {
+        return Base64ToFile(image)
+      })
+    )
+
+    images.then((images) => {
+      setImageFiles(images)
+    })
+  }, [listing])
+
+  const updateMutation = api.product.update.useMutation({
     onSuccess: () => {
       utils.product.invalidate();
-      toast.toast({ title: "Объявление создано" });
+      toast.toast({ title: "Объявление обновлено" });
       form.reset();
       router.refresh();
       setOpen(false);
     },
     onError: (e) => {
       console.error(e)
-      toast.toast({ title: "Не удалось создать объявление", variant: "destructive" });
+      toast.toast({ title: "Не удалось обновить объявление", variant: "destructive" });
     },
   })
 
@@ -86,9 +104,21 @@ export default function CreateListing() {
         required_error: "Описание обязательно",
       })
       .min(1, "Описание должно содержать хотя бы один символ"),
+    enabled: z.boolean(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
+    defaultValues: {
+      name: listing.name,
+      price: listing.price,
+      category: listing.category,
+      sizeX: listing.sizeX,
+      sizeY: listing.sizeY,
+      sizeZ: listing.sizeZ,
+      weight: listing.weight,
+      description: listing.description,
+      enabled: listing.enabled
+    },
     resolver: zodResolver(formSchema),
   });
 
@@ -116,8 +146,9 @@ export default function CreateListing() {
 
     setImagesLoading(true);
     const images = await ImagesToBase64(imageFiles);
-    createMutation.mutate({
+    updateMutation.mutate({
       ...data,
+      id: listing.id,
       images: images
     });
     setImagesLoading(false);
@@ -126,13 +157,13 @@ export default function CreateListing() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-fit">Создать объявление</Button>
+        <Button variant="ghost"><RxPencil2 /></Button>
       </DialogTrigger>
       <DialogContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onError)}>
             <DialogHeader>
-              <DialogTitle className="pb-2">Создание объявления</DialogTitle>
+              <DialogTitle className="pb-2">Редактирование объявления</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70svh] px-4 overflow-scroll space-y-6">
               <div className="space-y-4 py-6">
@@ -156,13 +187,13 @@ export default function CreateListing() {
                     <FormItem className="px-2">
                       <FormLabel>Категория</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
                             <SelectValue placeholder="Категория..." />
                           </SelectTrigger>
                           <SelectContent>
                             {categories.map((category) => (
-                              <SelectItem key={category.value} value={category.value}>
+                              <SelectItem key={category.value} value={category.value} >
                                 {category.title}
                               </SelectItem>
                             ))}
@@ -263,12 +294,28 @@ export default function CreateListing() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="enabled"
+                  render={({ field }) => (
+                    <FormItem className="px-2">
+                      <FormControl>
+                        <div className="flex flex-row items-center gap-2">
+                          <p>Включено</p>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange} />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </ScrollArea>
             <DialogFooter className="pt-4">
-              <Button type="submit" disabled={createMutation.isPending || imagesLoading} className="gap-2">
-                {createMutation.isPending || imagesLoading && <Loading />}
-                Создать</Button>
+              <Button type="submit" disabled={updateMutation.isPending || imagesLoading} className="gap-2">
+                {updateMutation.isPending || imagesLoading && <Loading />}
+                Сохранить</Button>
             </DialogFooter>
           </form>
         </Form>

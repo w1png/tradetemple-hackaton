@@ -31,6 +31,46 @@ export const productRouter = createTRPCRouter({
         }
       })
     }),
+  update: authenticatedProcedure
+    .input(z.object({
+      id: z.string(),
+
+      name: z.string().min(1),
+      price: z.number().min(1),
+      category: z.nativeEnum(Category),
+      images: z.array(z.string()),
+
+      sizeX: z.number(),
+      sizeY: z.number(),
+      sizeZ: z.number(),
+      weight: z.number(),
+
+      description: z.string(),
+      enabled: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const ownerId = await ctx.db.product.findUnique({
+        where: {
+          id: input.id
+        },
+        select: {
+          ownerId: true
+        }
+      })
+
+      if (ownerId?.ownerId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "UNAUTHORIZED" })
+      }
+
+      return ctx.db.product.update({
+        where: {
+          id: input.id
+        },
+        data: {
+          ...input
+        }
+      })
+    }),
 
   getMine: authenticatedProcedure.query(({ ctx }) => {
     return ctx.db.product.findMany({
@@ -88,6 +128,29 @@ export const productRouter = createTRPCRouter({
         created_at: merchant.createdAt,
         products: merchant.products
       }
-    })
+    }),
+  delete: authenticatedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const owner = await ctx.db.product.findUnique({
+        where: {
+          id: input.id
+        },
+        select: {
+          ownerId: true
+        }
+      })
 
+      if (ctx.session.user.id !== owner?.ownerId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" })
+      }
+
+      await ctx.db.product.delete({
+        where: {
+          id: input.id
+        }
+      })
+    }),
 });
