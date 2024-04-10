@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { Skeleton } from "./ui/skeleton";
 import StarRating from "./star_rating";
-import { GetProductRating, ProductWithReviews } from "~/shared";
+import { GetProductRating, ProductWithWarehouseProductsAndReviews } from "~/shared";
 import Link from "next/link";
 
-export default function ListingCard({ listing }: { listing: ProductWithReviews }) {
+export default function ListingCard({ listing }: { listing: ProductWithWarehouseProductsAndReviews }) {
   return (
     <Link href={`/listing/${listing.id}`} className="p-4 rounded-xl w-full bg-background border-border hover:shadow-xl flex flex-col gap-2 transition-all ease-in-out duration-300">
       <div className="w-full aspect-square">

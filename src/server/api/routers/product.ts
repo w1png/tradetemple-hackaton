@@ -88,13 +88,26 @@ export const productRouter = createTRPCRouter({
       })
     }),
 
-  getMine: authenticatedProcedure.query(({ ctx }) => {
+  getOwned: authenticatedProcedure.query(({ ctx }) => {
     return ctx.db.product.findMany({
       where: {
         ownerId: ctx.session.user.id
       },
       include: {
         reviews: true,
+        warehouseProducts: true
+      }
+    })
+  }),
+
+  getOwnedWithWarehouseProducts: authenticatedProcedure.query(({ ctx }) => {
+    return ctx.db.product.findMany({
+      where: {
+        ownerId: ctx.session.user.id
+      },
+      include: {
+        reviews: true,
+        warehouseProducts: true
       }
     })
   }),

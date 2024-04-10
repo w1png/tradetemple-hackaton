@@ -8,6 +8,7 @@ import UpdateWarehouse from "./update";
 export default async function Warehouses() {
   const warehouses = await api.warehouse.getOwned();
   const pickupPoints = await api.warehouse.getPickupPoints();
+  const listings = await api.product.getOwnedWithWarehouseProducts();
 
   return (
     <>
@@ -27,7 +28,7 @@ export default async function Warehouses() {
                   <TableCell className="truncate whitespace-nowrap">{warehouse.adress}</TableCell>
                   <TableCell className="hidden md:table-cell">{warehouse.totalProducts}</TableCell>
                   <TableCell className="flex flex-row">
-                    <UpdateWarehouse warehouse={warehouse} pickupPoints={pickupPoints} />
+                    <UpdateWarehouse listings={listings} warehouse={warehouse} pickupPoints={pickupPoints} />
                     <DeleteWarehouseDialog warehouse={warehouse} />
                   </TableCell>
                 </TableRow>

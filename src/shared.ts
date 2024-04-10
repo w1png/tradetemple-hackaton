@@ -47,9 +47,10 @@ export const categories = [
   },
 ]
 
-export type ProductWithReviews = inferProcedureOutput<AppRouter["product"]["getMine"]>[number];
+export type ProductWithWarehouseProducts = inferProcedureOutput<AppRouter["product"]["getOwnedWithWarehouseProducts"]>[number];
+export type ProductWithWarehouseProductsAndReviews = inferProcedureOutput<AppRouter["product"]["getOwned"]>[number];
 
-export function GetProductRating(product: ProductWithReviews) {
+export function GetProductRating(product: ProductWithWarehouseProductsAndReviews) {
   return product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
 }
 
@@ -78,18 +79,15 @@ export async function ImagesToBase64(images: File[]): Promise<string[]> {
 }
 
 export async function Base64ToFile(base64: string): Promise<File> {
-  // Split the base64 string into parts
   const parts = base64.split(';base64,');
 
   if (parts.length !== 2) {
     throw new Error('Invalid base64 string');
   }
 
-  // Extract the content type and base64 data
   const contentType = parts[0]!.split(':')[1];
   const base64Data = parts[1];
 
-  // Convert base64 to blob
   const byteCharacters = atob(base64Data!);
   const byteNumbers = new Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
@@ -98,7 +96,6 @@ export async function Base64ToFile(base64: string): Promise<File> {
   const byteArray = new Uint8Array(byteNumbers);
   const blob = new Blob([byteArray], { type: contentType });
 
-  // Create a File object from the blob
   const file = new File([blob], `file.${contentType!.split('/')[1]}`, { type: contentType });
 
   return file;

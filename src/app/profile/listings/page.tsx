@@ -1,5 +1,4 @@
 import { api } from "~/trpc/server";
-import { ProfileTabsLayout } from "~/components/profile_tabs_layout";
 import CreateListing from "./create";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
@@ -9,7 +8,7 @@ import DeleteListingDialog from "./delete";
 import UpdateListing from "./update";
 
 export default async function Listings() {
-  const listings = await api.product.getMine();
+  const listings = await api.product.getOwned();
 
   return (
     <>
@@ -23,6 +22,7 @@ export default async function Listings() {
               <TableHead className="hidden md:table-cell">Категория</TableHead>
               <TableHead className="hidden lg:table-cell">Размер</TableHead>
               <TableHead className="hidden lg:table-cell">Вес</TableHead>
+              <TableHead>На складе</TableHead>
               <TableHead className="hidden md:table-cell">Включен</TableHead>
               <TableHead></TableHead>
             </TableRow>
@@ -46,6 +46,7 @@ export default async function Listings() {
                   <TableCell className="whitespace-nowrap max-w-36 truncate hidden md:table-cell">{categories.find((c) => c.value === listing.category)?.title}</TableCell>
                   <TableCell className="whitespace-nowrap hidden lg:table-cell">{listing.sizeX} x {listing.sizeY} x {listing.sizeZ}</TableCell>
                   <TableCell className="hidden lg:table-cell">{listing.weight}кг</TableCell>
+                  <TableCell>{listing.warehouseProducts[0]?.amount}шт</TableCell>
                   <TableCell className="hidden md:table-cell">{listing.enabled ? <p className="text-in-stock">Включен</p> : <p className="text-not-in-stock" >Отключен</p>}</TableCell>
                   <TableCell>
                     <UpdateListing listing={listing} />
@@ -57,7 +58,7 @@ export default async function Listings() {
           </TableBody>
         </Table>
       </ScrollArea>
-      <div className="h-16 w-full flex items-center">
+      <div className="h-16 w-full flex items-center mb-14">
         <CreateListing />
       </div>
     </>

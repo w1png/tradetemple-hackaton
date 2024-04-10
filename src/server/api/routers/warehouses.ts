@@ -85,6 +85,10 @@ export const warehousesRouter = createTRPCRouter({
         time: z.number(),
         distance: z.number(),
       })),
+      amount: z.array(z.object({
+        listing_id: z.string(),
+        amount: z.number(),
+      }))
     }))
     .mutation(async ({ ctx, input }) => {
       const ownerId = await ctx.db.warehouse.findUnique({
@@ -100,12 +104,35 @@ export const warehousesRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" })
       }
 
+
+      await ctx.db.warehouseProduct.deleteMany({
+        where: {
+          warehouseId: input.id
+        }
+      })
+
+      await ctx.db.warehouseToPickupPointDistance.deleteMany({
+        where: {
+          warehouseId: input.id
+        }
+      })
+
       await ctx.db.warehouse.update({
         where: {
           id: input.id
         },
         data: {
           adress: input.adress,
+          warehouseProduct: {
+            createMany: {
+              data: input.amount.map((amount) => {
+                return {
+                  productId: amount.listing_id,
+                  amount: amount.amount
+                }
+              })
+            }
+          },
           warehouseToPickupPointDistance: {
             createMany: {
               data: input.distances.map((distance) => {

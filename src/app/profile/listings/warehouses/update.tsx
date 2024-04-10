@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import Loading from "~/components/loading";
 import { useRouter } from "next/navigation";
 import { RxPencil2 } from "react-icons/rx";
-import { WarehouseWithPickupLocations, PikcupPoint } from "~/shared";
+import { WarehouseWithPickupLocations, PikcupPoint, ProductWithWarehouseProductsAndReviews, ProductWithWarehouseProducts } from "~/shared";
 import { Separator } from "~/components/ui/separator";
 
 type Distance = {
@@ -30,9 +30,15 @@ type Distance = {
   time: number,
 }
 
-export default function UpdateWarehouse({ warehouse, pickupPoints }: {
+type ListingWithAmount = {
+  listing: ProductWithWarehouseProductsAndReviews | null
+  amount: number
+}
+
+export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
   warehouse: WarehouseWithPickupLocations,
-  pickupPoints: PikcupPoint[]
+  pickupPoints: PikcupPoint[],
+  listings: ProductWithWarehouseProducts[],
 }) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -41,6 +47,10 @@ export default function UpdateWarehouse({ warehouse, pickupPoints }: {
   const router = useRouter();
 
   const [distances, setDistances] = useState<{ [key: string]: Distance }>({});
+  const [amounts, setAmounts] = useState<ListingWithAmount[]>(listings.map((listing) => ({
+    listing,
+    amount: listing.warehouseProducts[0]?.amount || 0
+  })));
 
   useEffect(() => {
     const new_distances: { [key: string]: Distance } = {}
@@ -111,6 +121,14 @@ export default function UpdateWarehouse({ warehouse, pickupPoints }: {
     updateMutation.mutate({
       ...data,
       id: warehouse.id,
+      amount: amounts
+        .filter((amount) => amount.listing && amount.listing.id)
+        .map((amount) => {
+          return {
+            listing_id: amount.listing!.id,
+            amount: amount.amount
+          }
+        }),
       distances: pickupPoints.map((pickupPoint) => {
         if (!distances[pickupPoint.id]) {
           return {
@@ -167,6 +185,22 @@ export default function UpdateWarehouse({ warehouse, pickupPoints }: {
                     </div>
                   ))}
                 </div>
+                <Separator />
+                <div className="w-full flex flex-col gap-2 px-2">
+                  {listings.map((listing) => (
+                    <FormItem>
+                      <FormLabel>{listing.name}</FormLabel>
+                      <Input
+                        onChange={(e) => {
+                          setAmounts(amounts.map((a) => a.listing?.id === listing.id ? { ...a, amount: Number(e.target.value) } : a))
+                        }}
+                        value={amounts.find((a) => a.listing?.id === listing.id)?.amount || 0}
+                        placeholder="Количество"
+                        type="number"
+                      />
+                    </FormItem>
+                  ))}
+                </div >
               </div>
             </ScrollArea>
             <DialogFooter className="pt-4">
@@ -177,6 +211,6 @@ export default function UpdateWarehouse({ warehouse, pickupPoints }: {
           </form>
         </Form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }
