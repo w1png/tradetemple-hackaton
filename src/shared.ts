@@ -4,36 +4,42 @@ import { AppRouter } from "./server/api/root";
 
 export const categories = [
   {
+    id: "electronics",
     title: "Электроника",
     image: "/electronics.png",
     url: "/categories/electronics",
     value: Category.ELECTRONICS,
   },
   {
+    id: "house",
     title: "Для дачи и дома",
     image: "/house.png",
     url: "/categories/house",
     value: Category.HOME,
   },
   {
+    id: "hobby",
     title: "Товары для хобби и отдыха",
     image: "/hobby.png",
     url: "/categories/hobby",
     value: Category.HOBBY,
   },
   {
+    id: "pets",
     title: "Животные и товары для них",
     image: "/pets.png",
     url: "/categories/pets",
     value: Category.PETS
   },
   {
+    id: "clothing",
     title: "Одежда",
     image: "/clothing.png",
     url: "/categories/clothing",
     value: Category.CLOTHING
   },
   {
+    id: "books",
     title: "Книги",
     image: "/books.png",
     url: "/categories/books",
@@ -97,3 +103,6 @@ export async function Base64ToFile(base64: string): Promise<File> {
 
   return file;
 }
+
+export type WarehouseWithPickupLocations = inferProcedureOutput<AppRouter["warehouse"]["getOwned"]>[number];
+export type PikcupPoint = inferProcedureOutput<AppRouter["warehouse"]["getPickupPoints"]>[number];

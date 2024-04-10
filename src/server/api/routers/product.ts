@@ -7,6 +7,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { categories } from "~/shared";
 
 export const productRouter = createTRPCRouter({
   create: authenticatedProcedure
@@ -68,6 +69,21 @@ export const productRouter = createTRPCRouter({
         },
         data: {
           ...input
+        }
+      })
+    }),
+
+  getByCategory: publicProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(({ ctx, input }) => {
+      return ctx.db.product.findMany({
+        where: {
+          category: categories.find((c) => c.id === input.id)?.value
+        },
+        include: {
+          reviews: true,
         }
       })
     }),
