@@ -18,7 +18,7 @@ export default async function Home() {
   }))
 
   return (
-    <div className="flex flex-col px-4">
+    <div className="w-screen flex flex-col px-4">
       <Navbar />
       <section className="container mx-auto bg-background rounded-xl mb-8 min-h-[25rem] flex flex-col items-center justify-center gap-6">
         <p className="text-6xl text-center font-semibold">Не знаете как сделать<br />заказ?</p>
