@@ -1,8 +1,7 @@
 "use client"
 
 import CartButton from "~/components/cart_button";
-import { Separator } from "~/components/ui/separator";
-import { CartListing } from "~/shared"
+import { type CartListing } from "~/shared"
 
 export default function CartListing({
   listing

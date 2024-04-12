@@ -28,7 +28,7 @@ export default async function Warehouses() {
                   <TableCell className="truncate whitespace-nowrap">{warehouse.adress}</TableCell>
                   <TableCell className="hidden md:table-cell">{warehouse.totalProducts}</TableCell>
                   <TableCell className="flex flex-row">
-                    <UpdateWarehouse listings={listings} warehouse={warehouse} pickupPoints={pickupPoints} />
+                    <UpdateWarehouse listings={listings} warehouse={warehouse} />
                     <DeleteWarehouseDialog warehouse={warehouse} />
                   </TableCell>
                 </TableRow>

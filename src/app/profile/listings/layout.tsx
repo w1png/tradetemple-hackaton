@@ -8,10 +8,6 @@ export default function ListingsLayout({ children }: {
       <ProfileTabsLayout
         tabs={[
           {
-            name: "Статистика",
-            href: "/profile/listings/stats"
-          },
-          {
             name: "Объявления",
             href: "/profile/listings"
           },

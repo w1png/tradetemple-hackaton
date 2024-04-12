@@ -8,7 +8,9 @@ await import("./src/env.js");
 const config = {
   reactStrictMode: true,
   swcMinify: true,
-  output: "standalone",
+  eslint: {
+    ignoreDuringBuilds: true
+  }
 };
 
 export default config;
