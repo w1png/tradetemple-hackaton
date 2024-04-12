@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Loading from "~/components/loading";
@@ -21,12 +20,20 @@ export default function CreatePickupPoint() {
     adress: z.string()
       .min(1, "Адрес должен содержать хотя бы один символ"),
     schedule: z.string().min(1, "Расписание должно содержать хотя бы один символ"),
+    coordX: z.coerce.number({
+      invalid_type_error: "Координата должна быть числом",
+    }),
+    coordY: z.coerce.number({
+      invalid_type_error: "Координата должна быть числом",
+    }),
   })
 
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       adress: "",
       schedule: "",
+      coordX: 0,
+      coordY: 0
     },
     resolver: zodResolver(formSchema)
   })
@@ -85,6 +92,32 @@ export default function CreatePickupPoint() {
             </FormItem>
           )}
         />
+        <div className="grid grid-cols-2">
+          <FormField
+            control={form.control}
+            name="coordX"
+            render={({ field }) => (
+              <FormItem className="px-2">
+                <FormLabel>Широта</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="coordY"
+            render={({ field }) => (
+              <FormItem className="px-2">
+                <FormLabel>Долгота</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="w-full flex justify-end">
           <Button type="submit" disabled={createMutation.isPending} className="gap-2">
             {createMutation.isPending && <Loading />}

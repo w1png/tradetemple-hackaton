@@ -17,6 +17,7 @@ export default async function PickupPoints() {
           <TableRow>
             <TableHead>Адрес</TableHead>
             <TableHead>Расписание</TableHead>
+            <TableHead>Координаты</TableHead>
             <TableHead className="w-fit">Действие</TableHead>
           </TableRow>
         </TableHeader>
@@ -26,6 +27,9 @@ export default async function PickupPoints() {
               <TableRow>
                 <TableCell className="font-medium">{pickupPoint.adress}</TableCell>
                 <TableCell>{pickupPoint.schedule}</TableCell>
+                <TableCell>
+                  Ш: {pickupPoint.coordX}, Д: {pickupPoint.coordY}
+                </TableCell>
                 <TableCell>
                   <DeleteDialog pickupPoint={pickupPoint} />
                 </TableCell>

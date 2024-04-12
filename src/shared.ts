@@ -1,56 +1,57 @@
 import { type inferProcedureOutput } from "@trpc/server";
-import { Category, Product } from "@prisma/client";
+import { Category } from "@prisma/client";
 import { AppRouter } from "./server/api/root";
 
 export const categories = [
   {
     id: "electronics",
     title: "Электроника",
-    image: "/electronics.png",
+    image: "/electronics.jpg",
     url: "/categories/electronics",
     value: Category.ELECTRONICS,
   },
   {
     id: "house",
     title: "Для дачи и дома",
-    image: "/house.png",
+    image: "/house.jpg",
     url: "/categories/house",
     value: Category.HOME,
   },
   {
     id: "hobby",
     title: "Товары для хобби и отдыха",
-    image: "/hobby.png",
+    image: "/hobby.jpg",
     url: "/categories/hobby",
     value: Category.HOBBY,
   },
   {
     id: "pets",
     title: "Животные и товары для них",
-    image: "/pets.png",
+    image: "/pets.jpg",
     url: "/categories/pets",
     value: Category.PETS
   },
   {
     id: "clothing",
     title: "Одежда",
-    image: "/clothing.png",
+    image: "/clothing.jpg",
     url: "/categories/clothing",
     value: Category.CLOTHING
   },
   {
     id: "books",
     title: "Книги",
-    image: "/books.png",
+    image: "/books.jpg",
     url: "/categories/books",
     value: Category.BOOKS
   },
 ]
 
 export type ProductWithWarehouseProducts = inferProcedureOutput<AppRouter["product"]["getOwnedWithWarehouseProducts"]>[number];
+export type ProductWithReviews = inferProcedureOutput<AppRouter["product"]["getByCategory"]>[number];
 export type ProductWithWarehouseProductsAndReviews = inferProcedureOutput<AppRouter["product"]["getOwned"]>[number];
 
-export function GetProductRating(product: ProductWithWarehouseProductsAndReviews) {
+export function GetProductRating(product: ProductWithWarehouseProductsAndReviews | ProductWithReviews) {
   return product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
 }
 
@@ -60,8 +61,12 @@ export function GetMerchantRating(merchant: Merchant) {
   return merchant.reviews.reduce((acc, review) => acc + review.rating, 0) / merchant.reviews.length
 }
 
-export const PRICE_PER_KM_RUB = 60;
-export const PRICE_PER_KM_EXPRESS_RUB = 90;
+export function GetListingRating(listing: ProductWithReviews) {
+  return listing.reviews.reduce((acc, review) => acc + review.rating, 0) / listing.reviews.length
+}
+
+export const PRICE_PER_KM_RUB = 20;
+export const PRICE_PER_KM_EXPRESS_RUB = 40;
 
 export async function ImagesToBase64(images: File[]): Promise<string[]> {
   const imagesBase64 = await Promise.all(
@@ -101,5 +106,12 @@ export async function Base64ToFile(base64: string): Promise<File> {
   return file;
 }
 
-export type WarehouseWithPickupLocations = inferProcedureOutput<AppRouter["warehouse"]["getOwned"]>[number];
+export type WarehouseWithProducts = inferProcedureOutput<AppRouter["warehouse"]["getOwned"]>[number];
 export type PikcupPoint = inferProcedureOutput<AppRouter["warehouse"]["getPickupPoints"]>[number];
+
+export type CartListing = inferProcedureOutput<AppRouter["cart"]["getAll"]>[number];
+export type AvailableWarehouse = inferProcedureOutput<AppRouter["warehouse"]["getWithProducts"]>[number];
+
+
+export type MerchantOrder = inferProcedureOutput<AppRouter["order"]["getOwnedMerchant"]>[number];
+export type UserOrder = inferProcedureOutput<AppRouter["order"]["getOwned"]>[number];

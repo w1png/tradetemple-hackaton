@@ -10,23 +10,18 @@ import { FaBars } from "react-icons/fa";
 import { categories } from "~/shared";
 
 function CategoryCard({ category }: { category: typeof categories[number] }) {
-  const [isImageLoading, setIsImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-
   return (
     <Link href={category.url}>
       <Card className="aspect-video p-4 flex flex-col hover:bg-muted/40 transition-colors ease-in-out duration-300 gap-2">
         {category.title}
-        {!isImageLoading || imageError ? <Skeleton className="grow rounded-xl" /> : (
-          <Image
-            src={category.image}
-            alt={category.title}
-            width={100}
-            height={100}
-            onError={() => setImageError(true)}
-            onLoadingComplete={() => setIsImageLoading(false)}
-          />
-        )}
+        <Image
+          className="w-full h-full object-cover rounded-xl"
+          src={category.image}
+          alt={category.title}
+          width={100}
+          height={100}
+          unoptimized
+        />
       </Card>
     </Link>
 

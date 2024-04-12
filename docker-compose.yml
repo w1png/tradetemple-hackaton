@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  app:
+    platform: "linux/amd64"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CLIENTVAR: "clientvar"
+    working_dir: /app
+    ports:
+      - "3100:3000"
+    image: t3-app
+    environment:
+      - DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tradetemple"
+      - NEXTAUTH_URL="http://localhost:3100"
+      - YANDEX_CLIENT_ID="ce17cda7a9634064bbb26cb45e82c2c9"
+      - YANDEX_CLIENT_SECRET="88b48d08d0824ec883306b7bf49077ef"
+      - MAIN_ADMIN_EMAIL="w1png@yandex.ru"

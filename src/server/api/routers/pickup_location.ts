@@ -14,6 +14,8 @@ export const pickupPointRouter = createTRPCRouter({
   create: adminProcedure.input(z.object({
     adress: z.string(),
     schedule: z.string(),
+    coordX: z.coerce.number(),
+    coordY: z.coerce.number(),
   })).mutation(({ ctx, input }) => {
     return ctx.db.pickupPoint.create({
       data: {

@@ -58,7 +58,7 @@ export default async function Listings() {
           </TableBody>
         </Table>
       </ScrollArea>
-      <div className="h-16 w-full flex items-center mb-14">
+      <div className="h-16 w-full flex items-center mb-14 md:mb-0">
         <CreateListing />
       </div>
     </>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FaDoorOpen } from "react-icons/fa";
-import { FaGears, FaMessage, FaShop, FaTruck } from "react-icons/fa6";
+import { FaMessage, FaShop, FaTruck } from "react-icons/fa6";
 
 function NavbarItem({
   pathName,
@@ -53,11 +53,6 @@ export default function ProfileNavigation() {
       name: "Отзывы",
       href: "/profile/reviews",
       icon: <FaMessage className={"p-0.5 " + iconsClass} />
-    },
-    {
-      name: "Настройки",
-      href: "/profile/settings",
-      icon: <FaGears className={iconsClass} />
     },
   ]
 

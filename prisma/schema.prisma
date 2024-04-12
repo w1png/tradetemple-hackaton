@@ -58,6 +58,9 @@ model User {
   merchantReviews Review[] @relation("merchant")
 
   createdAt DateTime @default(now())
+  Review    Review[]
+
+  Order Order[]
 }
 
 enum Category {
@@ -90,6 +93,7 @@ model Product {
   warehouseProducts WarehouseProduct[]
   cartProducts      CartProduct[]
   reviews           Review[]
+  OrderProduct      OrderProduct[]
 }
 
 model Review {
@@ -104,6 +108,8 @@ model Review {
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?
+  User      User?   @relation(fields: [userId], references: [id])
 
   @@id([ownerId, productId])
 }
@@ -123,11 +129,13 @@ model CartProduct {
 model Warehouse {
   id     String @id @default(cuid())
   adress String
+  coordX Int
+  coordY Int
 
-  ownerId                        String
-  owner                          User                             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  warehouseToPickupPointDistance WarehouseToPickupPointDistance[]
-  warehouseProduct               WarehouseProduct[]
+  ownerId          String
+  owner            User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  warehouseProduct WarehouseProduct[]
+  Order            Order[]
 }
 
 model WarehouseProduct {
@@ -141,23 +149,12 @@ model WarehouseProduct {
 }
 
 model PickupPoint {
-  id                             String                           @id @default(cuid())
-  adress                         String
-  schedule                       String
-  warehouseToPickupPointDistance WarehouseToPickupPointDistance[]
-}
-
-model WarehouseToPickupPointDistance {
-  distanceKm      Int
-  distanceMinutes Int
-
-  warehouseId String
-  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-
-  pickupPointId String
-  pickupPoint   PickupPoint @relation(fields: [pickupPointId], references: [id], onDelete: Cascade)
-
-  @@id([warehouseId, pickupPointId])
+  id       String  @id @default(cuid())
+  adress   String
+  schedule String
+  coordX   Int
+  coordY   Int
+  Order    Order[]
 }
 
 model VerificationToken {
@@ -176,4 +173,47 @@ enum OrderStatus {
   DELIVERED
   REJECTED
   RECEIVED
+}
+
+enum DeliveryType {
+  EXPRESS
+  DEFAULT
+}
+
+model Order {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status OrderStatus @default(REGISTERED)
+
+  merchantIds String[]
+
+  products OrderProduct[]
+
+  pickupPointId String?
+  pickupPoint   PickupPoint? @relation(fields: [pickupPointId], references: [id], onDelete: SetNull)
+
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+
+  deliveryType  DeliveryType
+  deliveryPrice Int
+
+  createdAt DateTime @default(now())
+}
+
+model OrderProduct {
+  amount Int
+
+  name  String
+  price Int
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId   String
+  Order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@id([orderId, productId])
 }

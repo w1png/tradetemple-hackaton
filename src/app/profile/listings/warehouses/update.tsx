@@ -18,26 +18,21 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/trpc/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Loading from "~/components/loading";
 import { useRouter } from "next/navigation";
 import { RxPencil2 } from "react-icons/rx";
-import { WarehouseWithPickupLocations, PikcupPoint, ProductWithWarehouseProductsAndReviews, ProductWithWarehouseProducts } from "~/shared";
-import { Separator } from "~/components/ui/separator";
-
-type Distance = {
-  distance: number,
-  time: number,
-}
+import { ProductWithWarehouseProductsAndReviews, ProductWithWarehouseProducts, WarehouseWithProducts } from "~/shared";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import Image from "next/image";
 
 type ListingWithAmount = {
   listing: ProductWithWarehouseProductsAndReviews | null
   amount: number
 }
 
-export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
-  warehouse: WarehouseWithPickupLocations,
-  pickupPoints: PikcupPoint[],
+export default function UpdateWarehouse({ warehouse, listings }: {
+  warehouse: WarehouseWithProducts,
   listings: ProductWithWarehouseProducts[],
 }) {
   const [open, setOpen] = useState<boolean>(false);
@@ -46,23 +41,10 @@ export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
   const utils = api.useUtils();
   const router = useRouter();
 
-  const [distances, setDistances] = useState<{ [key: string]: Distance }>({});
   const [amounts, setAmounts] = useState<ListingWithAmount[]>(listings.map((listing) => ({
     listing,
     amount: listing.warehouseProducts[0]?.amount || 0
   })));
-
-  useEffect(() => {
-    const new_distances: { [key: string]: Distance } = {}
-    warehouse.warehouseToPickupPointDistance.forEach((val) => {
-      new_distances[val.pickupPointId] = {
-        distance: val.distanceKm,
-        time: val.distanceMinutes
-      }
-    })
-    setDistances(new_distances)
-
-  }, [warehouse])
 
   const updateMutation = api.warehouse.update.useMutation({
     onSuccess: () => {
@@ -85,11 +67,21 @@ export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
       })
       .min(1, "Адрес должен содержать хотя бы один символ")
       .max(80, "Адрес должен содержать максимум 80 символов"),
+    coordX: z.coerce.number({
+      required_error: "Широта обязательна",
+      invalid_type_error: "Широта должна быть числом",
+    }),
+    coordY: z.coerce.number({
+      required_error: "Долгота обязательна",
+      invalid_type_error: "Долгота должна быть числом",
+    }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       adress: warehouse.adress,
+      coordY: warehouse.coordY,
+      coordX: warehouse.coordX,
     },
     resolver: zodResolver(formSchema),
   });
@@ -105,14 +97,6 @@ export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     let wasError = false;
-    pickupPoints.forEach((pickupPoint) => {
-      const d = distances[pickupPoint.id]
-      if (!d || d.time === 0 || d.distance === 0) {
-        wasError = true
-        return
-      }
-    })
-
     if (wasError) {
       toast.toast({ title: "Не все поля заполнены", variant: "destructive" });
       return
@@ -126,23 +110,9 @@ export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
         .map((amount) => {
           return {
             listing_id: amount.listing!.id,
-            amount: amount.amount
+            amount: amount.amount,
           }
         }),
-      distances: pickupPoints.map((pickupPoint) => {
-        if (!distances[pickupPoint.id]) {
-          return {
-            id: pickupPoint.id,
-            time: 0,
-            distance: 0
-          }
-        }
-        return {
-          id: pickupPoint.id,
-          time: distances[pickupPoint.id]!.time,
-          distance: distances[pickupPoint.id]!.distance
-        }
-      })
     })
   }
 
@@ -158,48 +128,92 @@ export default function UpdateWarehouse({ warehouse, pickupPoints, listings }: {
               <DialogTitle className="pb-2">Редактирование склада</DialogTitle>
             </DialogHeader>
             <ScrollArea className="max-h-[70svh] px-4 overflow-scroll space-y-6">
-              <div className="space-y-8 py-6">
+              <div className="space-y-2 py-6">
                 <FormField
                   control={form.control}
                   name="adress"
                   render={({ field }) => (
                     <FormItem className="px-2">
-                      <FormLabel>Название</FormLabel>
+                      <FormLabel>Адрес</FormLabel>
                       <FormControl>
-                        <Input placeholder="Кресло" {...field} />
+                        <Input placeholder="г. Москва ул. Ленина д. 25" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
-                <Separator />
-                <div className="px-2 space-y-4 w-full flex flex-col">
-                  {pickupPoints.map((point, index) => (
-                    <div className="flex flex-col gap-2 w-full" key={index}>
-                      <FormItem className="w-full">
-                        <FormLabel
-                        >Пукнт выдачи по адресу <span className="font-bold">"{point.adress}"</span></FormLabel>
-
-                        <Input value={distances[point.id]?.distance || 0} placeholder="Расстояние (Километры)" type="number" onChange={(e) => setDistances({ ...distances, [point.id]: { distance: Number(e.target.value), time: distances[point.id]?.time || 0 } })} />
-                        <Input value={distances[point.id]?.time || 0} placeholder="Время (Минуты)" type="number" onChange={(e) => setDistances({ ...distances, [point.id]: { distance: distances[point.id]?.distance || 0, time: Number(e.target.value) } })} />
-                      </FormItem>
-                    </div>
-                  ))}
-                </div>
-                <Separator />
-                <div className="w-full flex flex-col gap-2 px-2">
-                  {listings.map((listing) => (
-                    <FormItem>
-                      <FormLabel>{listing.name}</FormLabel>
-                      <Input
-                        onChange={(e) => {
-                          setAmounts(amounts.map((a) => a.listing?.id === listing.id ? { ...a, amount: Number(e.target.value) } : a))
-                        }}
-                        value={amounts.find((a) => a.listing?.id === listing.id)?.amount || 0}
-                        placeholder="Количество"
-                        type="number"
-                      />
+                <FormField
+                  control={form.control}
+                  name="coordX"
+                  render={({ field }) => (
+                    <FormItem className="px-2">
+                      <FormLabel>Ширина</FormLabel>
+                      <FormControl>
+                        <Input placeholder="10" {...field} />
+                      </FormControl>
                     </FormItem>
-                  ))}
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="coordY"
+                  render={({ field }) => (
+                    <FormItem className="px-2">
+                      <FormLabel>Высота</FormLabel>
+                      <FormControl>
+                        <Input placeholder="10" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <div className="w-full flex flex-col gap-2 py-6 px-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Фото</TableHead>
+                        <TableHead>Название</TableHead>
+                        <TableHead>Кол-во</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {listings.map((listing) => {
+                        return (
+                          <TableRow>
+                            <TableCell className="w-fit">
+                              <Image
+                                width={100}
+                                height={100}
+                                className="size-12 aspect-square md:size-16 rounded-xl object-cover"
+                                src={listing.images[0] || ""}
+                                alt={listing.name}
+                              />
+
+                            </TableCell>
+                            <TableCell className="max-w-36 truncate">{listing.name}</TableCell>
+                            <TableCell>
+                              <Input
+                                className="max-w-24"
+                                onChange={(e) => {
+                                  const amount = parseInt(e.target.value);
+                                  setAmounts((prev) => {
+                                    return prev.map((a) => {
+                                      if (a.listing?.id === listing.id) {
+                                        return {
+                                          ...a,
+                                          amount
+                                        }
+                                      }
+                                      return a
+                                    })
+                                  })
+                                }}
+                                value={amounts.find((a) => a.listing?.id === listing.id)?.amount || 0}
+                                type="number" placeholder="0" />
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
                 </div >
               </div>
             </ScrollArea>

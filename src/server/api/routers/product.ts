@@ -83,7 +83,7 @@ export const productRouter = createTRPCRouter({
           category: categories.find((c) => c.id === input.id)?.value
         },
         include: {
-          reviews: true,
+          reviews: true
         }
       })
     }),
@@ -121,7 +121,11 @@ export const productRouter = createTRPCRouter({
           id: input.id
         },
         include: {
-          reviews: true,
+          reviews: {
+            include: {
+              User: true
+            }
+          },
         }
       })
     }),
@@ -138,7 +142,11 @@ export const productRouter = createTRPCRouter({
         include: {
           owner: {
             include: {
-              merchantReviews: true,
+              merchantReviews: {
+                include: {
+                  User: true,
+                }
+              },
               products: true,
             }
           },

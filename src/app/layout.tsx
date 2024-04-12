@@ -6,6 +6,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "~/components/theme_provider";
 import { Toaster } from "~/components/ui/toaster";
 import Navbar from "~/components/navbar";
+import { SessionProvider } from "next-auth/react";
 
 const main_font = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -32,13 +33,13 @@ export default function RootLayout({
         <TRPCReactProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
             <Toaster />
             <Navbar />
-            <div className="flex w-screen mt-24 min-h-[calc(100svh-6rem)] pb-4">
+            <div className="flex w-screen mt-24 min-h-[calc(100svh-6rem)] p-2">
               {children}
             </div>
           </ThemeProvider>

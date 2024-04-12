@@ -7,12 +7,20 @@ import { FaUser, FaDoorOpen, FaTruck, FaList, FaStar } from "react-icons/fa";
 import ThemeSwitch from "./theme_switch";
 import CategoriesDropdown from "./categories-dropdown";
 import Search from "./search";
-import { Skeleton } from "./ui/skeleton";
+import NavbarCartButton from "./navbar_cart_button";
+import Image from "next/image";
 
 function Logo() {
   return (
-    <Link href="/" className="h-full aspect-square p-4">
-      <Skeleton className="h-full w-full rounded-xl" />
+    <Link href="/" className="h-full p-4 flex flex-row items-center gap-2 group">
+      <Image
+        src="/logo.svg"
+        alt="logo"
+        width={100}
+        height={100}
+        className="size-10 group-hover:scale-105 group-hover:rotate-[8deg] transition-transform ease-in-out duration-300"
+      />
+      <p className="font-semibold">TradeTemple</p>
     </Link>
   );
 }
@@ -34,35 +42,26 @@ async function ProfileDropdown() {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-2">
-              <DropdownMenuItem>
-                <Link href="/profile" className="flex items-center gap-2">
-                  <FaUser />
-                  Профиль
-                </Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <Link href="" className="flex items-center gap-2">
+              <Link href="/profile/orders" >
+                <DropdownMenuItem className="flex items-center gap-2">
                   <FaTruck />
                   Заказы
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              </Link>
 
-              <DropdownMenuItem>
-                <Link href="" className="flex items-center gap-2">
+              <Link href="/profile/reviews">
+                <DropdownMenuItem className="flex items-center gap-2">
                   <FaStar />
                   Отзывы
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              </Link>
 
-
-
-              <DropdownMenuItem>
-                <Link href="/profile/listings" className="flex items-center gap-2">
+              <Link href="/profile/listings">
+                <DropdownMenuItem className="flex items-center gap-2">
                   <FaList />
                   Объявления
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              </Link>
 
               <DropdownMenuItem>
                 <ThemeSwitch />
@@ -97,6 +96,7 @@ export default function Navbar() {
         <Logo />
         <CategoriesDropdown />
         <Search />
+        <NavbarCartButton />
         <ProfileDropdown />
       </div>
     </nav>

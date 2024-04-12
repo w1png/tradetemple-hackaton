@@ -1,6 +1,5 @@
 "use client";
 
-import { Category } from "@prisma/client";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +12,8 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "~/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/trpc/react";
 import { useState } from "react";
@@ -51,6 +49,14 @@ export default function CreateWarehouse() {
       })
       .min(1, "Адрес должен содержать хотя бы один символ")
       .max(80, "Адрес должен содержать не более 80 символов"),
+    coordX: z.coerce.number({
+      required_error: "Координаты обязательны",
+      invalid_type_error: "Координаты должны быть строкой",
+    }),
+    coordY: z.coerce.number({
+      required_error: "Координаты обязательны",
+      invalid_type_error: "Координаты должны быть строкой",
+    })
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -75,7 +81,7 @@ export default function CreateWarehouse() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-fit">Создать склад</Button>
+        <Button className="w-fit">Содать склад</Button>
       </DialogTrigger>
       <DialogContent>
         <Form {...form}>
@@ -95,6 +101,36 @@ export default function CreateWarehouse() {
                 </FormItem>
               )}
             />
+            <FormItem className="px-2 py-4">
+              <div className="grid grid-cols-2 gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="coordX"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Широта</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="10" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="coordY"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Долгота</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="10" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </FormItem>
             <DialogFooter className="pt-4">
               <Button type="submit" disabled={createMutation.isPending} className="gap-2">
                 {createMutation.isPending && <Loading />}

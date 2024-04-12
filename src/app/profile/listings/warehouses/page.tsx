@@ -37,7 +37,7 @@ export default async function Warehouses() {
           </TableBody>
         </Table>
       </ScrollArea>
-      <div className="h-16 w-full flex items-center">
+      <div className="h-16 w-full flex items-center mb-12 md:m-0">
         <CreateWarehouse />
       </div>
 

@@ -3,6 +3,7 @@ import { GetMerchantRating, Merchant } from "~/shared";
 import StarRating from "./star_rating";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
+import Reviews from "./rating";
 
 
 export default function MerchantCard({ merchant }: {
@@ -16,10 +17,10 @@ export default function MerchantCard({ merchant }: {
     <div className="flex flex-col gap-2 w-full md:max-w-60">
       <div className="flex flex-row justify-between">
         <div className="flex flex-col gap-1">
-          <Link className="url" href={`/merchant/${merchant.id}`}>{merchant.name}</Link>
+          <p>{merchant.name}</p>
           <div className="flex flex-row gap-2">
             <StarRating rating={GetMerchantRating(merchant)} />
-            <Link className="url text-sm" href={`/merchant/${merchant.id}/reviews`}>{merchant.reviews.length} оценок</Link>
+            <Reviews merchant={merchant} />
           </div>
         </div>
         <Link href={`/merchant/${merchant.id}`} className="h-full aspect-square flex items-center justify-center">

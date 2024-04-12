@@ -40,6 +40,7 @@ export default function CreateListing() {
       utils.product.invalidate();
       toast.toast({ title: "Объявление создано" });
       form.reset();
+      setImageFiles([]);
       router.refresh();
       setOpen(false);
     },
