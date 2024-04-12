@@ -19,10 +19,6 @@ export default function ListingsLayout({ children }: {
             name: "Склады",
             href: "/profile/listings/warehouses"
           },
-          {
-            name: "Завершенные",
-            href: "/profile/listings/completed"
-          }
         ]}
       >
         {children}
